@@ -1,0 +1,37 @@
+{
+  "name": "zodios-remix-poc",
+  "version": "0.0.1",
+  "author": {
+    "name": "ecyrbe"
+  },
+  "private": true,
+  "sideEffects": false,
+  "scripts": {
+    "build": "remix build",
+    "dev": "remix dev",
+    "start": "remix-serve build"
+  },
+  "dependencies": {
+    "@remix-run/node": "^1.7.4",
+    "@remix-run/react": "^1.7.4",
+    "@remix-run/serve": "^1.7.4",
+    "@types/qs": "^6.9.7",
+    "@zodios/core": "^10.5.0",
+    "isbot": "^3.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "qs": "^6.11.0",
+    "zod": "^3.19.1"
+  },
+  "devDependencies": {
+    "@remix-run/dev": "^1.7.4",
+    "@remix-run/eslint-config": "^1.7.4",
+    "@types/react": "^18.0.15",
+    "@types/react-dom": "^18.0.6",
+    "eslint": "^8.23.1",
+    "typescript": "^4.7.4"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
