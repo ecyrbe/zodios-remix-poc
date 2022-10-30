@@ -1,8 +1,15 @@
 import { useCatch } from "@remix-run/react";
-import { makeEndpoint } from "@zodios/core";
+import type { ZodiosEndpointDefinition } from "@zodios/core";
+import type { Narrow } from "@zodios/core/lib/utils.types";
+import z from "zod";
 import { makeLoader } from "../../../zodios-remix";
 import { useLoaderData } from "../../../zodios-remix/hooks";
-import z from "zod";
+
+export function makeEndpoint<T extends ZodiosEndpointDefinition<any>>(
+  endpoint: Narrow<T>
+): T {
+  return endpoint as T;
+}
 
 const contract = makeEndpoint({
   method: "get",
@@ -28,16 +35,19 @@ const contract = makeEndpoint({
   ],
 });
 
-export const loader = makeLoader(contract, async ({ params, error, json }) => {
-  if (params.id !== 1) {
-    throw error(404).json({ message: "User not found" });
+export const loader = /* @__PURE__ */ makeLoader(
+  contract,
+  async ({ params, error, json }) => {
+    if (params.id !== 1) {
+      throw error(404).json({ message: "User not found" });
+    }
+    // you can try this to show the error boundary
+    // // @ts-expect-error
+    // return json({ id: params.id, names: "John" });
+    //                                ^ bad property name
+    return json({ id: params.id, name: "John" });
   }
-  // you can try this to show the error boundary
-  // // @ts-expect-error
-  // return json({ id: params.id, names: "John" });
-  //                                ^ bad property name
-  return json({ id: params.id, name: "John" });
-});
+);
 
 export default function User() {
   const user = useLoaderData(contract);
