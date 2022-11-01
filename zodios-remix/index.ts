@@ -9,7 +9,7 @@ import type { AppLoadContext, DataFunctionArgs } from "@remix-run/node";
 import qs from "qs";
 import { validateEndpoint } from "./validator";
 import { error } from "./builders";
-import type { ErrorBuilder, JsonBuilder, RemixResponse } from "./builders";
+import type { ErrorBuilder, JsonBuilder } from "./builders";
 
 type LoaderParams<Endpoint extends ZodiosEndpointDefinition> = {
   params: ZodiosPathParamsForEndpoint<Endpoint, false>;
@@ -20,20 +20,21 @@ type LoaderParams<Endpoint extends ZodiosEndpointDefinition> = {
   json: JsonBuilder<Endpoint>;
 };
 
-//export type LoaderFunction<
-
-export const makeLoader = <Endpoint extends ZodiosEndpointDefinition>(
+export const checkLoaderContract = async <
+  Endpoint extends ZodiosEndpointDefinition
+>(
   endpoint: Endpoint,
-  loader: (
-    args: LoaderParams<Endpoint>
-  ) => Promise<RemixResponse<ZodiosResponseForEndpoint<Endpoint>>>
-) => {
-  return async ({ params, request, context }: DataFunctionArgs) => {
-    const validated = await validateEndpoint(endpoint, {
-      params,
-      query: qs.parse(request.url.split("?")[1] || ""),
-      headers: request.headers,
-    });
-    return loader({ ...validated, request, context, error, json } as any);
-  };
+  args: DataFunctionArgs
+): Promise<LoaderParams<Endpoint>> => {
+  const validated = await validateEndpoint(endpoint, {
+    params: args.params,
+    query: qs.parse(args.request.url.split("?")[1] || ""),
+    headers: args.request.headers,
+  });
+  return {
+    ...args,
+    ...validated,
+    error,
+    json,
+  } as any;
 };

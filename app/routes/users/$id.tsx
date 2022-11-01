@@ -1,17 +1,18 @@
 import { useCatch } from "@remix-run/react";
+import z from "zod";
+import { checkLoaderContract } from "../../../zodios-remix";
+import { useLoaderData } from "../../../zodios-remix/hooks";
 import type { ZodiosEndpointDefinition } from "@zodios/core";
 import type { Narrow } from "@zodios/core/lib/utils.types";
-import z from "zod";
-import { makeLoader } from "../../../zodios-remix";
-import { useLoaderData } from "../../../zodios-remix/hooks";
+import type { LoaderArgs } from "@remix-run/node";
 
-export function makeEndpoint<T extends ZodiosEndpointDefinition<any>>(
+function makeContract<T extends ZodiosEndpointDefinition>(
   endpoint: Narrow<T>
 ): T {
   return endpoint as T;
 }
 
-const contract = makeEndpoint({
+const contract = makeContract({
   method: "get",
   path: "/users/:id",
   parameters: [
@@ -35,22 +36,25 @@ const contract = makeEndpoint({
   ],
 });
 
-export const loader = /* @__PURE__ */ makeLoader(
-  contract,
-  async ({ params, error, json }) => {
-    if (params.id !== 1) {
-      throw error(404).json({ message: "User not found" });
-    }
-    // you can try this to show the error boundary
-    // // @ts-expect-error
-    // return json({ id: params.id, names: "John" });
-    //                                ^ bad property name
-    return json({ id: params.id, name: "John" });
+export const loader = async (args: LoaderArgs) => {
+  const { params, error, json } = await checkLoaderContract(contract, args);
+  //                                      ^ check and validate the contract
+  if (params.id !== 1) {
+    //       ^ coerced to a number
+    throw error(404).json({ message: "User not found" });
+    //                 ^ only accepts the schema defined in the contract
   }
-);
+  // you can try this to show the error boundary
+  // // @ts-expect-error
+  // return json({ id: params.id, names: "John" });
+  //                                ^ bad property name
+  return json({ id: params.id, name: "John" });
+  //      ^ only accepts the schema defined in the contract
+};
 
 export default function User() {
   const user = useLoaderData(contract);
+  //     ^ guarenteed to be the schema defined in the contract
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }}>
       <h1>{user.name}</h1>
